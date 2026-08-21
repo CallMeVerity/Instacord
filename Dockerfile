@@ -8,5 +8,7 @@ RUN dotnet publish Instacord.csproj -c Release -r $RID --self-contained -o /app
 
 FROM debian:bookworm-slim
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends libicu-dev ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app ./
 ENTRYPOINT ["./Instacord"]
