@@ -1,0 +1,15 @@
+.git
+.gitignore
+.github
+docs
+.superpowers
+.claude
+**/bin
+**/obj
+tests
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.local.json
+.env
+.env.*
+*.log
