@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Instacord.csproj" />
+    <ProjectReference Include="..\..\src\Instacord.csproj" />
   </ItemGroup>
 
   <ItemGroup>
