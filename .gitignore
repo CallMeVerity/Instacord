@@ -1,0 +1,21 @@
+# Docs are kept untracked
+docs/
+
+# .NET build artifacts
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+*.pidb
+*.pdb
+
+# IDE
+.idea/
+.vs/
+*.DotSettings.user
+
+# Local secrets / runtime
+appsettings.Development.json
+appsettings.Local.json
+*.log
