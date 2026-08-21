@@ -46,4 +46,20 @@ public class PostMessageBuilderTests
         Assert.Throws<IndexOutOfRangeException>(() =>
             PostMessageBuilder.Build(Post(3), "https://www.instagram.com/p/ABC/", 5));
     }
+
+    [Fact]
+    public void Build_defaults_show_caption_false()
+    {
+        var message = PostMessageBuilder.Build(Post(3), "https://www.instagram.com/p/ABC/", null);
+
+        Assert.False(message.ShowCaption);
+    }
+
+    [Fact]
+    public void Build_sets_show_caption_from_param()
+    {
+        var message = PostMessageBuilder.Build(Post(3), "https://www.instagram.com/p/ABC/", null, true);
+
+        Assert.True(message.ShowCaption);
+    }
 }

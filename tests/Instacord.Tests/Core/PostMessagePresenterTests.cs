@@ -9,7 +9,7 @@ public class PostMessagePresenterTests
 {
     private const string RepoUrl = "https://git.nathan.rip/Nathan/Instacord";
 
-    private static PostMessage Message(int items, int current = 1) => new()
+    private static PostMessage Message(int items, int current = 1, bool showCaption = false) => new()
     {
         Code = "ABC",
         Title = "caption",
@@ -24,6 +24,7 @@ public class PostMessagePresenterTests
             AccessibilityCaption = "alt text",
         }).ToList(),
         CurrentIndex = current,
+        ShowCaption = showCaption,
     };
 
     private static ComponentContainerProperties Container(PostMessage msg)
@@ -35,8 +36,11 @@ public class PostMessagePresenterTests
     private static List<IActionRowComponentProperties> Buttons(PostMessage msg)
         => Container(msg).Components.OfType<ActionRowProperties>().Single().ToList();
 
-    private static TextDisplayProperties Text(PostMessage msg)
-        => Container(msg).Components.OfType<TextDisplayProperties>().Single();
+    private static TextDisplayProperties HeaderText(PostMessage msg)
+        => Container(msg).Components.OfType<TextDisplayProperties>().First(t => t.Content != PostMessagePresenter.Footer);
+
+    private static TextDisplayProperties FooterText(PostMessage msg)
+        => Container(msg).Components.OfType<TextDisplayProperties>().Single(t => t.Content == PostMessagePresenter.Footer);
 
     [Fact]
     public void Build_sets_components_v2_flag()
@@ -62,7 +66,7 @@ public class PostMessagePresenterTests
             .Components.OfType<MediaGalleryProperties>().Single();
 
         var item = Assert.Single(gallery.Items);
-        Assert.Equal("https://cdn.example.com/img1.jpg", item.Media.Url);
+        Assert.Equal("https://cdn.example.com/img1.jpg", item.Media!.Url);
     }
 
     [Fact]
@@ -74,10 +78,21 @@ public class PostMessagePresenterTests
 
         var prev = buttons.OfType<ButtonProperties>().Single(b => b.Label == "Prev");
         var next = buttons.OfType<ButtonProperties>().Single(b => b.Label == "Next");
-        Assert.Equal("igpage:ABC:1", prev.CustomId);
-        Assert.Equal("igpage:ABC:3", next.CustomId);
+        Assert.Equal("igpage:ABC:1:0", prev.CustomId);
+        Assert.Equal("igpage:ABC:3:0", next.CustomId);
         Assert.False(prev.Disabled);
         Assert.False(next.Disabled);
+    }
+
+    [Fact]
+    public void Build_pagination_ids_carry_caption_flag()
+    {
+        var buttons = Buttons(Message(3, current: 2, showCaption: true));
+
+        var prev = buttons.OfType<ButtonProperties>().Single(b => b.Label == "Prev");
+        var next = buttons.OfType<ButtonProperties>().Single(b => b.Label == "Next");
+        Assert.Equal("igpage:ABC:1:1", prev.CustomId);
+        Assert.Equal("igpage:ABC:3:1", next.CustomId);
     }
 
     [Fact]
@@ -128,17 +143,38 @@ public class PostMessagePresenterTests
     [Fact]
     public void Build_username_header_links_to_profile()
     {
-        var text = Text(Message(2)).Content;
+        var text = HeaderText(Message(2));
 
-        Assert.Contains("### [@someone](https://www.instagram.com/someone/)", text);
+        Assert.Contains("### [@someone](https://www.instagram.com/someone/)", text.Content);
     }
 
     [Fact]
-    public void Build_footer_links_to_repo_once()
+    public void Build_omits_caption_by_default()
     {
-        var text = Text(Message(2)).Content;
+        var text = HeaderText(Message(2));
 
-        Assert.Equal(1, text.Split(RepoUrl, StringSplitOptions.None).Length - 1);
-        Assert.Contains("via [Instacord](" + RepoUrl + ")", text);
+        Assert.DoesNotContain("caption", text.Content);
+    }
+
+    [Fact]
+    public void Build_includes_caption_when_show_caption()
+    {
+        var text = HeaderText(Message(2, showCaption: true));
+
+        Assert.Contains("caption", text.Content);
+    }
+
+    [Fact]
+    public void Build_footer_is_below_buttons_and_links_to_repo_once()
+    {
+        var msg = Message(2);
+        var children = Container(msg).Components.ToList();
+
+        var actionRowIndex = children.FindIndex(c => c is ActionRowProperties);
+        var footerIndex = children.FindIndex(c => c is TextDisplayProperties t && t.Content == PostMessagePresenter.Footer);
+
+        Assert.True(footerIndex > actionRowIndex);
+        Assert.Equal(PostMessagePresenter.Footer, FooterText(msg).Content);
+        Assert.DoesNotContain(RepoUrl, HeaderText(msg).Content);
     }
 }

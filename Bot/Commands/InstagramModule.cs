@@ -14,7 +14,8 @@ public class InstagramModule(IInstagramService api) : ApplicationCommandModule<A
         IntegrationTypes = [ApplicationIntegrationType.GuildInstall, ApplicationIntegrationType.UserInstall])]
     public async Task Ig(
         [SlashCommandParameter(Name = "url", Description = "Instagram post or reel link")] string url,
-        [SlashCommandParameter(Name = "index", Description = "Album item to open on, 1-based")] int? index = null)
+        [SlashCommandParameter(Name = "index", Description = "Album item to open on, 1-based")] int? index = null,
+        [SlashCommandParameter(Name = "descriptions", Description = "Include the post caption")] bool? descriptions = null)
     {
         var parsed = InstagramUrlParser.TryParse(url);
         if (parsed is null)
@@ -35,7 +36,7 @@ public class InstagramModule(IInstagramService api) : ApplicationCommandModule<A
         PostMessage message;
         try
         {
-            message = PostMessageBuilder.Build(post, $"https://www.instagram.com/p/{post.Code}/", index);
+            message = PostMessageBuilder.Build(post, $"https://www.instagram.com/p/{post.Code}/", index, descriptions ?? false);
         }
         catch (IndexOutOfRangeException)
         {

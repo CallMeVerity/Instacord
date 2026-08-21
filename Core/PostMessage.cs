@@ -11,5 +11,6 @@ public record PostMessage
     public string? Caption { get; init; }
     public required IReadOnlyList<MediaItem> Items { get; init; }
     public required int CurrentIndex { get; init; }
+    public bool ShowCaption { get; init; }
     public int? AccentColorRgb { get; init; }
 }

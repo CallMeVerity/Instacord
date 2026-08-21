@@ -6,7 +6,7 @@ public static class PostMessageBuilder
 {
     private const int InstagramAccent = 0xE1306C;
 
-    public static PostMessage Build(InstagramPost post, string postUrl, int? index)
+    public static PostMessage Build(InstagramPost post, string postUrl, int? index, bool showCaption = false)
     {
         var total = post.Items.Count;
         var current = index ?? 1;
@@ -26,6 +26,7 @@ public static class PostMessageBuilder
             Caption = post.Caption,
             Items = post.Items,
             CurrentIndex = current,
+            ShowCaption = showCaption,
             AccentColorRgb = InstagramAccent,
         };
     }

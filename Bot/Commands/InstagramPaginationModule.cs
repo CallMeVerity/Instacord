@@ -9,7 +9,7 @@ namespace Instacord.Bot.Commands;
 public class InstagramPaginationModule(IInstagramService api) : ComponentInteractionModule<ComponentInteractionContext>
 {
     [ComponentInteraction("igpage")]
-    public async Task Page(string code, int index)
+    public async Task Page(string code, int index, int withCaption)
     {
         var post = await api.GetPostAsync(code);
         if (post is null)
@@ -20,7 +20,8 @@ public class InstagramPaginationModule(IInstagramService api) : ComponentInterac
         }
 
         var current = Math.Clamp(index, 1, post.Items.Count);
-        var message = PostMessageBuilder.Build(post, $"https://www.instagram.com/p/{post.Code}/", current);
+        var showCaption = withCaption != 0;
+        var message = PostMessageBuilder.Build(post, $"https://www.instagram.com/p/{post.Code}/", current, showCaption);
         var properties = PostMessagePresenter.Build(message);
 
         await Context.Interaction.SendResponseAsync(InteractionCallback.ModifyMessage(m =>

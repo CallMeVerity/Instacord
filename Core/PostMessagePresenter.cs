@@ -7,7 +7,7 @@ namespace Instacord.Core;
 public static class PostMessagePresenter
 {
     private const int MaxComponentText = 4000;
-    private const string Footer = "-# via [Instacord](https://git.nathan.rip/Nathan/Instacord)";
+    public const string Footer = "-# via [Instacord](https://git.nathan.rip/Nathan/Instacord)";
     private const string PaginationPrefix = "igpage";
 
     public static InteractionMessageProperties Build(PostMessage msg)
@@ -23,6 +23,7 @@ public static class PostMessagePresenter
         children.Add(new TextDisplayProperties(BuildText(msg)));
 
         children.Add(BuildActionRow(msg));
+        children.Add(new TextDisplayProperties(Footer));
 
         var container = new ComponentContainerProperties(children) { AccentColor = color };
 
@@ -39,8 +40,10 @@ public static class PostMessagePresenter
 
         if (msg.Items.Count > 1)
         {
+            var flag = msg.ShowCaption ? 1 : 0;
+
             buttons.Add(new ButtonProperties(
-                PaginationId(msg.Code, msg.CurrentIndex - 1),
+                PaginationId(msg.Code, msg.CurrentIndex - 1, flag),
                 "Prev",
                 ButtonStyle.Secondary)
             {
@@ -56,7 +59,7 @@ public static class PostMessagePresenter
             });
 
             buttons.Add(new ButtonProperties(
-                PaginationId(msg.Code, msg.CurrentIndex + 1),
+                PaginationId(msg.Code, msg.CurrentIndex + 1, flag),
                 "Next",
                 ButtonStyle.Secondary)
             {
@@ -69,7 +72,8 @@ public static class PostMessagePresenter
         return new ActionRowProperties(buttons);
     }
 
-    private static string PaginationId(string code, int index) => $"{PaginationPrefix}:{code}:{index}";
+    private static string PaginationId(string code, int index, int flag) =>
+        $"{PaginationPrefix}:{code}:{index}:{flag}";
 
     private static MediaGalleryItemProperties GalleryItem(MediaItem item)
     {
@@ -82,14 +86,16 @@ public static class PostMessagePresenter
     private static string BuildText(PostMessage msg)
     {
         var header = BuildHeader(msg);
-        var caption = string.IsNullOrWhiteSpace(msg.Caption) ? "" : $"\n\n{msg.Caption}";
-        var footer = $"\n\n{Footer}";
 
-        var budget = MaxComponentText - header.Length - footer.Length;
+        if (!msg.ShowCaption || string.IsNullOrWhiteSpace(msg.Caption))
+            return header;
+
+        var caption = $"\n\n{msg.Caption}";
+        var budget = MaxComponentText - header.Length;
         if (caption.Length > budget)
-            caption = "\n\n" + Truncate(caption.TrimStart('\n', '\r'), budget - 2) + "…";
+            caption = "\n\n" + Truncate(msg.Caption!.TrimStart('\n', '\r'), budget - 2) + "…";
 
-        return header + caption + footer;
+        return header + caption;
     }
 
     private static string BuildHeader(PostMessage msg)
