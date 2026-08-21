@@ -113,6 +113,16 @@ public class PostMessagePresenterTests
 
         Assert.Equal("2 / 4", counter.Label);
         Assert.True(counter.Disabled);
+        Assert.False(string.IsNullOrEmpty(counter.CustomId));
+    }
+
+    [Fact]
+    public void Build_every_button_has_a_nonempty_custom_id()
+    {
+        var buttons = Buttons(Message(4, current: 2));
+
+        foreach (var b in buttons.OfType<ButtonProperties>())
+            Assert.False(string.IsNullOrEmpty(b.CustomId));
     }
 
     [Fact]

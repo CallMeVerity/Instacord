@@ -48,7 +48,7 @@ public static class PostMessagePresenter
             });
 
             buttons.Add(new ButtonProperties(
-                "",
+                PaginationPrefix + ":count",
                 $"{msg.CurrentIndex} / {msg.Items.Count}",
                 ButtonStyle.Secondary)
             {
