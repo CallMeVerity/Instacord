@@ -1,4 +1,6 @@
+using System.Net;
 using Instacord.Configuration;
+using Instacord.Services;
 using NetCord.Hosting.Gateway;
 using NetCord.Hosting.Services;
 using NetCord.Hosting.Services.ApplicationCommands;
@@ -7,6 +9,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<InstacordOptions>(builder.Configuration.GetSection("Instagram"));
 builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<CookieContainer>();
+builder.Services.AddHttpClient<InstagramService>()
+    .ConfigurePrimaryHttpMessageHandler(sp => new HttpClientHandler
+    {
+        UseCookies = true,
+        CookieContainer = sp.GetRequiredService<CookieContainer>(),
+        AllowAutoRedirect = true,
+    });
 
 builder.Services
     .AddDiscordGateway(options => options.Intents = 0)
