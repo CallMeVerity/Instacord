@@ -6,5 +6,4 @@ public class InstacordOptions
     public int RequestTimeoutSeconds { get; set; } = 15;
     public int CacheSeconds { get; set; } = 900;
     public string CookieHeader { get; set; } = "";
-    public ulong OwnerUserId { get; set; }
 }

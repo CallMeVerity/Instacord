@@ -1,16 +1,12 @@
-using Microsoft.Extensions.Options;
 using NetCord;
 using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
-using Instacord.Bot.Preconditions;
-using Instacord.Configuration;
 using Instacord.Core;
 using Instacord.Parsing;
 using Instacord.Services;
 
 namespace Instacord.Bot.Commands;
 
-[RequireOwner<ApplicationCommandContext>]
 public class InstagramModule(IInstagramService api) : ApplicationCommandModule<ApplicationCommandContext>
 {
     [SlashCommand("ig", "Embed an Instagram post or reel",

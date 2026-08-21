@@ -24,7 +24,6 @@ public class InstagramServiceTests
             RequestTimeoutSeconds = 5,
             CacheSeconds = cacheSeconds,
             CookieHeader = "",
-            OwnerUserId = 1,
         }));
         var sp = services.BuildServiceProvider();
         var service = sp.GetRequiredService<InstagramService>();

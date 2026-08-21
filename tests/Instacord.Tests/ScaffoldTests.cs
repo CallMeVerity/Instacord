@@ -15,7 +15,6 @@ public class ScaffoldTests
                 ["Instagram:RequestTimeoutSeconds"] = "30",
                 ["Instagram:CacheSeconds"] = "120",
                 ["Instagram:CookieHeader"] = "sessionid=abc",
-                ["Instagram:OwnerUserId"] = "12345",
             })
             .Build();
 
@@ -26,6 +25,5 @@ public class ScaffoldTests
         Assert.Equal(30, options.RequestTimeoutSeconds);
         Assert.Equal(120, options.CacheSeconds);
         Assert.Equal("sessionid=abc", options.CookieHeader);
-        Assert.Equal(12345UL, options.OwnerUserId);
     }
 }
