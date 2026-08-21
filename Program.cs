@@ -4,6 +4,7 @@ using Instacord.Services;
 using NetCord.Hosting.Gateway;
 using NetCord.Hosting.Services;
 using NetCord.Hosting.Services.ApplicationCommands;
+using NetCord.Hosting.Services.ComponentInteractions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,8 @@ builder.Services
     .AddGatewayHandlers(typeof(Program).Assembly)
     .AddApplicationCommands()
     .ConfigureApplicationCommands(options => options.AutoRegisterCommands = true);
+
+builder.Services.AddComponentInteractions();
 
 var app = builder.Build();
 

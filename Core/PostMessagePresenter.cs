@@ -7,7 +7,8 @@ namespace Instacord.Core;
 public static class PostMessagePresenter
 {
     private const int MaxComponentText = 4000;
-    private const string Footer = "-# via Instacord";
+    private const string Footer = "-# via [Instacord](https://git.nathan.rip/Nathan/Instacord)";
+    private const string PaginationPrefix = "igpage";
 
     public static InteractionMessageProperties Build(PostMessage msg)
     {
@@ -15,18 +16,13 @@ public static class PostMessagePresenter
 
         var children = new List<IComponentContainerComponentProperties>();
 
-        var galleryItems = msg.Items.Select(GalleryItem).ToArray();
-        children.Add(new MediaGalleryProperties(galleryItems));
+        var current = msg.Items[msg.CurrentIndex - 1];
+        children.Add(new MediaGalleryProperties(new[] { GalleryItem(current) }));
 
         children.Add(new ComponentSeparatorProperties());
         children.Add(new TextDisplayProperties(BuildText(msg)));
 
-        children.Add(new ActionRowProperties(new IActionRowComponentProperties[]
-        {
-            new LinkButtonProperties(msg.Url, "View on Instagram"),
-        }));
-
-        children.Add(new TextDisplayProperties(Footer));
+        children.Add(BuildActionRow(msg));
 
         var container = new ComponentContainerProperties(children) { AccentColor = color };
 
@@ -36,6 +32,44 @@ public static class PostMessagePresenter
             Components = new IMessageComponentProperties[] { container },
         };
     }
+
+    private static ActionRowProperties BuildActionRow(PostMessage msg)
+    {
+        var buttons = new List<IActionRowComponentProperties>();
+
+        if (msg.Items.Count > 1)
+        {
+            buttons.Add(new ButtonProperties(
+                PaginationId(msg.Code, msg.CurrentIndex - 1),
+                "Prev",
+                ButtonStyle.Secondary)
+            {
+                Disabled = msg.CurrentIndex <= 1,
+            });
+
+            buttons.Add(new ButtonProperties(
+                "",
+                $"{msg.CurrentIndex} / {msg.Items.Count}",
+                ButtonStyle.Secondary)
+            {
+                Disabled = true,
+            });
+
+            buttons.Add(new ButtonProperties(
+                PaginationId(msg.Code, msg.CurrentIndex + 1),
+                "Next",
+                ButtonStyle.Secondary)
+            {
+                Disabled = msg.CurrentIndex >= msg.Items.Count,
+            });
+        }
+
+        buttons.Add(new LinkButtonProperties(msg.Url, "View on Instagram"));
+
+        return new ActionRowProperties(buttons);
+    }
+
+    private static string PaginationId(string code, int index) => $"{PaginationPrefix}:{code}:{index}";
 
     private static MediaGalleryItemProperties GalleryItem(MediaItem item)
     {
@@ -47,7 +81,7 @@ public static class PostMessagePresenter
 
     private static string BuildText(PostMessage msg)
     {
-        var header = string.IsNullOrWhiteSpace(msg.Username) ? msg.Title : $"### @{msg.Username}";
+        var header = BuildHeader(msg);
         var caption = string.IsNullOrWhiteSpace(msg.Caption) ? "" : $"\n\n{msg.Caption}";
         var footer = $"\n\n{Footer}";
 
@@ -56,6 +90,14 @@ public static class PostMessagePresenter
             caption = "\n\n" + Truncate(caption.TrimStart('\n', '\r'), budget - 2) + "…";
 
         return header + caption + footer;
+    }
+
+    private static string BuildHeader(PostMessage msg)
+    {
+        if (string.IsNullOrWhiteSpace(msg.Username))
+            return msg.Title;
+
+        return $"### [@{msg.Username}](https://www.instagram.com/{msg.Username}/)";
     }
 
     private static string Truncate(string value, int max) =>
