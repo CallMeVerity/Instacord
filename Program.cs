@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<InstacordOptions>(builder.Configuration.GetSection("Instagram"));
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<CookieContainer>();
-builder.Services.AddHttpClient<InstagramService>()
+builder.Services.AddHttpClient<IInstagramService, InstagramService>()
     .ConfigurePrimaryHttpMessageHandler(sp => new HttpClientHandler
     {
         UseCookies = true,
