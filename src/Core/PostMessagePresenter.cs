@@ -7,7 +7,7 @@ namespace Instacord.Core;
 public static class PostMessagePresenter
 {
     private const int MaxComponentText = 4000;
-    public const string Footer = "-# via [Instacord](https://git.nathan.rip/Nathan/Instacord)";
+    public const string Footer = "-# via [Instacord](https://github.com/CallMeVerity/Instacord)";
     private const string PaginationPrefix = "igpage";
 
     public static InteractionMessageProperties Build(PostMessage msg)
