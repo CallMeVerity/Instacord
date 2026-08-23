@@ -5,7 +5,7 @@ namespace Instacord.Parsing;
 public static class InstagramUrlParser
 {
     private static readonly Regex PostOrReel = new(
-        @"^https?://(?:www\.)?instagram\.com/(?:[^/]+/)?(?:p|reel)/(?<code>[A-Za-z0-9_-]+)",
+        @"^https?://(?:www\.)?instagram\.com/(?:[^/]+/)?(?:p|reels?)/(?<code>[A-Za-z0-9_-]+)",
         RegexOptions.IgnoreCase);
 
     private static readonly Regex Share = new(
