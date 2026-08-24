@@ -177,4 +177,39 @@ public class PostMessagePresenterTests
         Assert.Equal(PostMessagePresenter.Footer, FooterText(msg).Content);
         Assert.DoesNotContain(RepoUrl, HeaderText(msg).Content);
     }
+
+    [Fact]
+    public void Build_omits_stats_when_no_counts()
+    {
+        var text = HeaderText(Message(2));
+
+        Assert.DoesNotContain("likes", text.Content);
+        Assert.DoesNotContain("comments", text.Content);
+    }
+
+    [Fact]
+    public void Build_renders_like_and_comment_counts()
+    {
+        var msg = Message(2) with { LikeCount = 1234, CommentCount = 56 };
+
+        var text = HeaderText(msg);
+
+        Assert.Contains("1.2k likes", text.Content);
+        Assert.Contains("56 comments", text.Content);
+    }
+
+    [Theory]
+    [InlineData(0, "0")]
+    [InlineData(999, "999")]
+    [InlineData(1_000, "1k")]
+    [InlineData(1_200, "1.2k")]
+    [InlineData(12_345, "12.3k")]
+    [InlineData(1_000_000, "1M")]
+    [InlineData(1_230_000, "1.2M")]
+    public void Build_formats_counts_compactly(int count, string expected)
+    {
+        var msg = Message(1) with { LikeCount = count };
+
+        Assert.Contains($"{expected} likes", HeaderText(msg).Content);
+    }
 }

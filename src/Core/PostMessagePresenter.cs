@@ -86,16 +86,18 @@ public static class PostMessagePresenter
     private static string BuildText(PostMessage msg)
     {
         var header = BuildHeader(msg);
+        var stats = BuildStats(msg);
+        var text = stats is null ? header : $"{header}\n{stats}";
 
         if (!msg.ShowCaption || string.IsNullOrWhiteSpace(msg.Caption))
-            return header;
+            return text;
 
         var caption = $"\n\n{msg.Caption}";
-        var budget = MaxComponentText - header.Length;
+        var budget = MaxComponentText - text.Length;
         if (caption.Length > budget)
             caption = "\n\n" + Truncate(msg.Caption!.TrimStart('\n', '\r'), budget - 2) + "…";
 
-        return header + caption;
+        return text + caption;
     }
 
     private static string BuildHeader(PostMessage msg)
@@ -105,6 +107,23 @@ public static class PostMessagePresenter
 
         return $"### [@{msg.Username}](https://www.instagram.com/{msg.Username}/)";
     }
+
+    private static string? BuildStats(PostMessage msg)
+    {
+        var parts = new List<string>(2);
+        if (msg.LikeCount is { } likes)
+            parts.Add($"{FormatCount(likes)} likes");
+        if (msg.CommentCount is { } comments)
+            parts.Add($"{FormatCount(comments)} comments");
+        return parts.Count > 0 ? $"-# {string.Join(" · ", parts)}" : null;
+    }
+
+    private static string FormatCount(int value) => value switch
+    {
+        < 1_000 => value.ToString(),
+        < 1_000_000 => value / 1_000.0 % 1 == 0 ? $"{value / 1_000}k" : $"{value / 1_000.0:F1}k",
+        _ => value / 1_000_000.0 % 1 == 0 ? $"{value / 1_000_000}M" : $"{value / 1_000_000.0:F1}M",
+    };
 
     private static string Truncate(string value, int max) =>
         max <= 0 ? "" : (value.Length <= max ? value : value[..max]);

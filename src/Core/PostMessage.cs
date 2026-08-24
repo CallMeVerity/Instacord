@@ -9,6 +9,8 @@ public record PostMessage
     public required string Url { get; init; }
     public required string Username { get; init; }
     public string? Caption { get; init; }
+    public int? LikeCount { get; init; }
+    public int? CommentCount { get; init; }
     public required IReadOnlyList<MediaItem> Items { get; init; }
     public required int CurrentIndex { get; init; }
     public bool ShowCaption { get; init; }

@@ -24,6 +24,8 @@ public static class PostMessageBuilder
             Url = postUrl,
             Username = post.Username,
             Caption = post.Caption,
+            LikeCount = post.LikeCount,
+            CommentCount = post.CommentCount,
             Items = post.Items,
             CurrentIndex = current,
             ShowCaption = showCaption,

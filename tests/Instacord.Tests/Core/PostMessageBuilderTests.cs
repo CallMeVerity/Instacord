@@ -62,4 +62,25 @@ public class PostMessageBuilderTests
 
         Assert.True(message.ShowCaption);
     }
+
+    [Fact]
+    public void Build_carries_like_and_comment_counts()
+    {
+        var post = Post(1);
+        post = post with { LikeCount = 1234, CommentCount = 56 };
+
+        var message = PostMessageBuilder.Build(post, "https://www.instagram.com/p/ABC/", null);
+
+        Assert.Equal(1234, message.LikeCount);
+        Assert.Equal(56, message.CommentCount);
+    }
+
+    [Fact]
+    public void Build_defaults_counts_null_when_post_has_none()
+    {
+        var message = PostMessageBuilder.Build(Post(1), "https://www.instagram.com/p/ABC/", null);
+
+        Assert.Null(message.LikeCount);
+        Assert.Null(message.CommentCount);
+    }
 }
