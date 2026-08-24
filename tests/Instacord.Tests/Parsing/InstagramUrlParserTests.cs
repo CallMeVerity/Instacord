@@ -9,6 +9,7 @@ public class InstagramUrlParserTests
     [InlineData("https://instagram.com/p/DcRxVgRjOHs", "DcRxVgRjOHs", false)]
     [InlineData("http://www.instagram.com/p/DcRxVgRjOHs/?igsh=abc", "DcRxVgRjOHs", false)]
     [InlineData("https://www.instagram.com/reel/DcIDuk4BALD/", "DcIDuk4BALD", false)]
+    [InlineData("https://www.instagram.com/reels/DcIDuk4BALD/", "DcIDuk4BALD", false)]
     [InlineData("https://www.instagram.com/someuser/p/DcRxVgRjOHs/", "DcRxVgRjOHs", false)]
     [InlineData("https://www.instagram.com/share/AbCdEf123/", "AbCdEf123", true)]
     public void Parses_known_paths(string input, string expectedCode, bool expectedIsShare)
