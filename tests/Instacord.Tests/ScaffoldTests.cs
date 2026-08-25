@@ -13,7 +13,6 @@ public class ScaffoldTests
             {
                 ["Instagram:UserAgent"] = "TestAgent/1.0",
                 ["Instagram:RequestTimeoutSeconds"] = "30",
-                ["Instagram:CacheSeconds"] = "120",
                 ["Instagram:CookieHeader"] = "sessionid=abc",
             })
             .Build();
@@ -23,7 +22,6 @@ public class ScaffoldTests
 
         Assert.Equal("TestAgent/1.0", options.UserAgent);
         Assert.Equal(30, options.RequestTimeoutSeconds);
-        Assert.Equal(120, options.CacheSeconds);
         Assert.Equal("sessionid=abc", options.CookieHeader);
     }
 }

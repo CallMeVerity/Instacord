@@ -2,26 +2,23 @@ using System.Net;
 using Instacord.Configuration;
 using Instacord.Models;
 using Instacord.Parsing;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
 namespace Instacord.Services;
 
-public class InstagramService : IInstagramService
+public class InstagramService : IPostFetcher
 {
     private const string BaseUrl = "https://www.instagram.com/";
 
     private readonly HttpClient _http;
     private readonly InstacordOptions _options;
-    private readonly IMemoryCache _cache;
     private readonly CookieContainer _cookies;
     private int _warmedUp;
 
-    public InstagramService(HttpClient http, IOptions<InstacordOptions> options, IMemoryCache cache, CookieContainer cookies)
+    public InstagramService(HttpClient http, IOptions<InstacordOptions> options, CookieContainer cookies)
     {
         _http = http;
         _options = options.Value;
-        _cache = cache;
         _cookies = cookies;
         _http.Timeout = TimeSpan.FromSeconds(_options.RequestTimeoutSeconds);
         _http.DefaultRequestHeaders.UserAgent.ParseAdd(_options.UserAgent);
@@ -29,43 +26,31 @@ public class InstagramService : IInstagramService
             ApplyCookieHeader(_options.CookieHeader);
     }
 
-    public async Task<InstagramPost?> GetPostAsync(string code, CancellationToken ct = default, bool isShare = false)
+    public async Task<string?> ResolveCodeAsync(string code, bool isShare, CancellationToken ct = default)
     {
-        var cacheKey = $"post:{code}";
-        if (_cache.TryGetValue<InstagramPost>(cacheKey, out var cached))
-            return cached;
+        if (!isShare)
+            return code;
 
         await WarmUpAsync(ct);
+        return await ResolveShareAsync(code, ct);
+    }
 
-        string url;
-        if (isShare)
-        {
-            var resolved = await ResolveShareAsync(code, ct);
-            if (resolved is null)
-                return null;
-            url = resolved;
-        }
-        else
-        {
-            url = $"{BaseUrl}p/{code}/";
-        }
-
+    public async Task<InstagramPost?> FetchPostAsync(string code, CancellationToken ct = default)
+    {
+        await WarmUpAsync(ct);
+        var url = $"{BaseUrl}p/{code}/";
         var html = await FetchAsync(url, ct);
         if (html is null)
             return null;
 
-        InstagramPost? post;
         try
         {
-            post = PostParser.Parse(html);
+            return PostParser.Parse(html);
         }
         catch (InstagramParseException)
         {
             return null;
         }
-
-        _cache.Set(cacheKey, post, TimeSpan.FromSeconds(_options.CacheSeconds));
-        return post;
     }
 
     private async Task WarmUpAsync(CancellationToken ct)
@@ -90,7 +75,7 @@ public class InstagramService : IInstagramService
             using var response = await _http.GetAsync(shareUrl, ct);
             var finalUri = response.RequestMessage?.RequestUri?.AbsoluteUri ?? shareUrl;
             var parsed = InstagramUrlParser.TryParse(finalUri);
-            return parsed is { IsShare: false } ? $"{BaseUrl}p/{parsed.Code}/" : null;
+            return parsed is { IsShare: false } ? parsed.Code : null;
         }
         catch
         {
