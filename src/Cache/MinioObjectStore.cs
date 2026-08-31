@@ -25,6 +25,7 @@ public sealed class MinioObjectStore : IObjectStore
                 .WithBucket(_bucket)
                 .WithObject(key)
                 .WithCallbackStream(async (s, _) => await s.CopyToAsync(ms, ct)), ct);
+            
             ms.Position = 0;
             return ms;
         }
@@ -40,6 +41,7 @@ public sealed class MinioObjectStore : IObjectStore
         var copy = new MemoryStream();
         await content.CopyToAsync(copy, ct);
         copy.Position = 0;
+        
         await _client.PutObjectAsync(new PutObjectArgs()
             .WithBucket(_bucket)
             .WithObject(key)

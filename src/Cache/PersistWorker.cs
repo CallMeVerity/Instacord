@@ -10,7 +10,7 @@ public class PersistWorker : IHostedService
     private readonly PostPersistJob _job;
     private readonly CacheOptions _options;
     private readonly Func<TimeSpan, CancellationToken, Task> _delay;
-    private readonly List<Task> _runners = new();
+    private readonly List<Task> _runners = [];
     private CancellationTokenSource _cts = new();
 
     public PersistWorker(PostPersistJob job, IOptions<CacheOptions> options, Func<TimeSpan, CancellationToken, Task>? delay = null)
@@ -42,7 +42,7 @@ public class PersistWorker : IHostedService
     public async Task StopAsync(CancellationToken cancellationToken)
     {
         _channel.Writer.TryComplete();
-        _cts.Cancel();
+        await _cts.CancelAsync();
         try
         {
             await Task.WhenAll(_runners);

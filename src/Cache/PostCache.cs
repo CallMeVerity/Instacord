@@ -45,19 +45,19 @@ public sealed class PostCache : IInstagramService
             return cached!;
 
         var stored = await TryReadStoredAsync(realCode, ct);
-        if (stored is { } envelope)
+        if (stored is null) 
+            return await FetchAndRespondAsync(realCode, ct);
+        
+        if (IsExpired(stored))
         {
-            if (IsExpired(envelope))
-            {
-                _memory.Remove(realCode);
-            }
-            else
-            {
-                _memory.Put(realCode, envelope.Post);
-                if (IsStale(envelope))
-                    _worker.Enqueue(new PersistRequest(realCode, FreshPost: null, IsRefresh: true, OnEvict: c => _memory.Remove(c)));
-                return envelope.Post;
-            }
+            _memory.Remove(realCode);
+        }
+        else
+        {
+            _memory.Put(realCode, stored.Post);
+            if (IsStale(stored))
+                _worker.Enqueue(new PersistRequest(realCode, FreshPost: null, IsRefresh: true, OnEvict: c => _memory.Remove(c)));
+            return stored.Post;
         }
 
         return await FetchAndRespondAsync(realCode, ct);

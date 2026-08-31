@@ -27,7 +27,7 @@ public sealed class CacheSweeper : IHostedService, IDisposable
         return Task.CompletedTask;
     }
 
-    public async Task<int> SweepAsync(CancellationToken ct)
+    private async Task<int> SweepAsync(CancellationToken ct)
     {
         var keys = await _store.ListAsync(CacheKeys.Prefix, ct);
         var codes = keys
@@ -42,17 +42,17 @@ public sealed class CacheSweeper : IHostedService, IDisposable
             var stream = await _store.GetAsync(CacheKeys.MetaKey(code), ct);
             if (stream is null)
                 continue;
+            
             using var reader = new StreamReader(stream);
             var envelope = CachedPostEnvelope.Deserialize(await reader.ReadToEndAsync(ct));
             if (envelope is null)
                 continue;
-            if (DateTimeOffset.UtcNow - envelope.CachedAt > TimeSpan.FromDays(_options.TtlDays))
-            {
-                var prefix = CacheKeys.CodePrefix(code);
-                foreach (var key in await _store.ListAsync(prefix, ct))
-                    await _store.DeleteAsync(key, ct);
-                evicted++;
-            }
+            
+            if (DateTimeOffset.UtcNow - envelope.CachedAt <= TimeSpan.FromDays(_options.TtlDays)) continue;
+            var prefix = CacheKeys.CodePrefix(code);
+            foreach (var key in await _store.ListAsync(prefix, ct))
+                await _store.DeleteAsync(key, ct);
+            evicted++;
         }
         return evicted;
     }

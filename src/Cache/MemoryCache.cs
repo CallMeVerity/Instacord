@@ -8,7 +8,7 @@ public sealed class MemoryCache
     private readonly LinkedList<string> _order = new();
     private readonly Dictionary<string, LinkedListNode<string>> _nodes = new();
     private readonly Dictionary<string, InstagramPost> _posts = new();
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
 
     public MemoryCache(int capacity) => _capacity = capacity;
 
@@ -64,6 +64,7 @@ public sealed class MemoryCache
         {
             if (!_posts.Remove(code))
                 return;
+            
             _order.Remove(_nodes[code]);
             _nodes.Remove(code);
         }

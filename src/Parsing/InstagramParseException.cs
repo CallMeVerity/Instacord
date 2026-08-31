@@ -1,6 +1,3 @@
 namespace Instacord.Parsing;
 
-public class InstagramParseException : Exception
-{
-    public InstagramParseException(string message) : base(message) { }
-}
+public class InstagramParseException(string message) : Exception(message);

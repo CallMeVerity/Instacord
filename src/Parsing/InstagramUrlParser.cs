@@ -31,9 +31,6 @@ public static class InstagramUrlParser
             return new InstagramUrl(share.Groups["code"].Value, true);
 
         var post = PostOrReel.Match(trimmed);
-        if (post.Success)
-            return new InstagramUrl(post.Groups["code"].Value, false);
-
-        return null;
+        return post.Success ? new InstagramUrl(post.Groups["code"].Value, false) : null;
     }
 }

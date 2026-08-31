@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace Instacord.Cache;
 
-public class PostPersistJob
+public sealed class PostPersistJob
 {
     private readonly IObjectStore _store;
     private readonly HttpClient _http;
@@ -20,22 +20,22 @@ public class PostPersistJob
         _options = options.Value;
     }
 
-    public virtual async Task<bool> RunAsync(PersistRequest request, CancellationToken ct)
+    public async Task<bool> RunAsync(PersistRequest request, CancellationToken ct)
     {
-        InstagramPost? post = request.FreshPost;
+        var post = request.FreshPost;
 
-        if (request.IsRefresh)
-        {
-            post = await _fetcher.FetchPostAsync(request.Code, ct);
-            if (post is null)
-            {
-                await EvictAsync(request.Code, ct);
-                request.OnEvict?.Invoke(request.Code);
-                return true;
-            }
-        }
-
-        return await PersistAsync(request.Code, post!, ct);
+        if (!request.IsRefresh) 
+            return await PersistAsync(request.Code, post!, ct);
+        
+        post = await _fetcher.FetchPostAsync(request.Code, ct);
+        
+        if (post is not null)
+            return await PersistAsync(request.Code, post!, ct);
+        
+        await EvictAsync(request.Code, ct);
+        request.OnEvict?.Invoke(request.Code);
+        
+        return true;
     }
 
     private async Task<bool> PersistAsync(string code, InstagramPost post, CancellationToken ct)
@@ -47,7 +47,7 @@ public class PostPersistJob
             var index = i + 1;
             try
             {
-                using var media = await _http.GetStreamAsync(item.MediaUrl, ct);
+                await using var media = await _http.GetStreamAsync(item.MediaUrl, ct);
                 using var buffer = new MemoryStream();
                 await media.CopyToAsync(buffer, ct);
                 buffer.Position = 0;

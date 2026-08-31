@@ -64,6 +64,7 @@ public class InstagramService : IPostFetcher
         }
         catch
         {
+            // ignored
         }
     }
 
@@ -94,7 +95,7 @@ public class InstagramService : IPostFetcher
         return await response.Content.ReadAsStringAsync(ct);
     }
 
-    private void ApplyBrowserHeaders(HttpRequestMessage request)
+    private static void ApplyBrowserHeaders(HttpRequestMessage request)
     {
         request.Headers.Accept.ParseAdd("text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
         request.Headers.AcceptLanguage.ParseAdd("en-US,en;q=0.9");
@@ -116,14 +117,17 @@ public class InstagramService : IPostFetcher
             var eq = part.IndexOf('=');
             if (eq <= 0)
                 continue;
+            
             var name = part[..eq].Trim();
             var value = part[(eq + 1)..].Trim();
+            
             try
             {
                 _cookies.Add(new Uri(BaseUrl), new Cookie(name, value));
             }
             catch
             {
+                // ignored
             }
         }
     }

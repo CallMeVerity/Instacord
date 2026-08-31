@@ -7,7 +7,7 @@ namespace Instacord.Core;
 public static class PostMessagePresenter
 {
     private const int MaxComponentText = 4000;
-    public const string Footer = "-# via [Instacord](https://github.com/CallMeVerity/Instacord)";
+    private const string Footer = "-# via [Instacord](https://github.com/CallMeVerity/Instacord)";
     private const string PaginationPrefix = "igpage";
 
     public static InteractionMessageProperties Build(PostMessage msg)
@@ -17,7 +17,7 @@ public static class PostMessagePresenter
         var children = new List<IComponentContainerComponentProperties>();
 
         var current = msg.Items[msg.CurrentIndex - 1];
-        children.Add(new MediaGalleryProperties(new[] { GalleryItem(current) }));
+        children.Add(new MediaGalleryProperties([GalleryItem(current)]));
 
         children.Add(new ComponentSeparatorProperties());
         children.Add(new TextDisplayProperties(BuildText(msg)));
@@ -30,7 +30,7 @@ public static class PostMessagePresenter
         return new InteractionMessageProperties
         {
             Flags = MessageFlags.IsComponentsV2,
-            Components = new IMessageComponentProperties[] { container },
+            Components = [container],
         };
     }
 

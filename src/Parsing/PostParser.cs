@@ -7,7 +7,7 @@ namespace Instacord.Parsing;
 public static class PostParser
 {
     private static readonly Regex Blob = new(
-        @"<script type=""application/json""[^>]*data-sjs>(.*?)</script>",
+        """<script type="application/json"[^>]*data-sjs>(.*?)</script>""",
         RegexOptions.Singleline);
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
@@ -21,7 +21,7 @@ public static class PostParser
         return Map(schema);
     }
 
-    internal static PostSchema? ExtractPostSchema(string html)
+    private static PostSchema? ExtractPostSchema(string html)
     {
         foreach (Match match in Blob.Matches(html))
         {
@@ -68,12 +68,7 @@ public static class PostParser
 
         if (schema.CarouselMedia is { Count: > 0 } carousel)
         {
-            foreach (var media in carousel)
-            {
-                var item = MapMedia(media);
-                if (item is not null)
-                    items.Add(item);
-            }
+            items.AddRange(carousel.Select(MapMedia).OfType<MediaItem>());
         }
         else
         {
@@ -85,6 +80,7 @@ public static class PostParser
                 VideoVersions = schema.VideoVersions,
                 AccessibilityCaption = schema.AccessibilityCaption,
             });
+            
             if (item is not null)
                 items.Add(item);
         }
@@ -115,8 +111,10 @@ public static class PostParser
         if (isVideo)
         {
             var video = PickLargestVideo(media.VideoVersions);
+            
             if (video is null)
                 return null;
+            
             return new MediaItem
             {
                 Type = type,
@@ -142,15 +140,13 @@ public static class PostParser
     {
         if (candidates is null || candidates.Count == 0)
             return null;
+        
         PostSchema.VideoVersionSchema? best = null;
         var bestWidth = -1;
-        foreach (var candidate in candidates)
+        foreach (var candidate in candidates.Where(candidate => candidate.Width > bestWidth))
         {
-            if (candidate.Width > bestWidth)
-            {
-                bestWidth = candidate.Width;
-                best = candidate;
-            }
+            bestWidth = candidate.Width;
+            best = candidate;
         }
         return best;
     }
@@ -161,13 +157,10 @@ public static class PostParser
             return null;
         PostSchema.ImageCandidateSchema? best = null;
         var bestWidth = -1;
-        foreach (var candidate in candidates)
+        foreach (var candidate in candidates.Where(candidate => candidate.Width > bestWidth))
         {
-            if (candidate.Width > bestWidth)
-            {
-                bestWidth = candidate.Width;
-                best = candidate;
-            }
+            bestWidth = candidate.Width;
+            best = candidate;
         }
         return best;
     }
@@ -188,13 +181,18 @@ public static class PostParser
         for (var i = start; i < body.Length; i++)
         {
             var c = body[i];
-            if (c == '{')
-                depth++;
-            else if (c == '}')
+            switch (c)
             {
-                depth--;
-                if (depth == 0)
-                    return i;
+                case '{':
+                    depth++;
+                    break;
+                case '}':
+                {
+                    depth--;
+                    if (depth == 0)
+                        return i;
+                    break;
+                }
             }
         }
         return -1;

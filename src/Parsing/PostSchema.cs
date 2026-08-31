@@ -45,11 +45,13 @@ internal sealed class PostSchema
     {
         if (Caption is not { } element)
             return null;
-        if (element.ValueKind == JsonValueKind.String)
-            return element.GetString();
-        if (element.ValueKind == JsonValueKind.Object && element.TryGetProperty("text", out var text))
-            return text.GetString();
-        return null;
+        
+        return element.ValueKind switch
+        {
+            JsonValueKind.String => element.GetString(),
+            JsonValueKind.Object when element.TryGetProperty("text", out var text) => text.GetString(),
+            _ => null
+        };
     }
 
     internal sealed class MediaSchema
