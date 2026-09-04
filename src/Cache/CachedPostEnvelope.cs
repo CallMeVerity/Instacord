@@ -21,7 +21,17 @@ public sealed record CachedPostEnvelope
     {
         try
         {
-            return JsonSerializer.Deserialize<CachedPostEnvelope>(json, Options);
+            var envelope = JsonSerializer.Deserialize<CachedPostEnvelope>(json, Options);
+            if (envelope is null)
+                return null;
+
+            return envelope with
+            {
+                Post = envelope.Post with
+                {
+                    Items = envelope.Post.Items.Select(item => item with { IsCached = true }).ToList(),
+                },
+            };
         }
         catch (JsonException)
         {

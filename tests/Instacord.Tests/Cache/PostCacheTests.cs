@@ -80,6 +80,7 @@ public class PostCacheTests
 
         Assert.NotNull(post);
         Assert.Equal("https://rustfs/ABC/1.jpg", post!.Items[0].MediaUrl);
+        Assert.True(post.Items[0].IsCached);
         await f.Fetcher.DidNotReceive().FetchPostAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
         Assert.True(f.Memory.TryGet("ABC", out _));
     }

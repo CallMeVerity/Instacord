@@ -36,6 +36,19 @@ public class CachedPostEnvelopeTests
     }
 
     [Fact]
+    public void Deserialize_marks_items_as_cached()
+    {
+        const string json = """
+            {"cachedAt":"2026-08-25T12:00:00Z","post":{"code":"ABC","username":"u","items":[{"type":0,"mediaUrl":"https://rustfs/ABC/1.jpg","displayUrl":""}]}}
+            """;
+
+        var envelope = CachedPostEnvelope.Deserialize(json);
+
+        Assert.NotNull(envelope);
+        Assert.True(envelope!.Post.Items[0].IsCached);
+    }
+
+    [Fact]
     public void Deserialize_returns_null_for_invalid_json()
     {
         Assert.Null(CachedPostEnvelope.Deserialize("not json"));
