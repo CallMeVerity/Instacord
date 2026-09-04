@@ -67,12 +67,15 @@ public static class PostMessagePresenter
             });
         }
 
-        buttons.Add(new ButtonProperties(
-            RefreshId(msg.Code, msg.CurrentIndex, flag),
-            "Refresh",
-            ButtonStyle.Secondary));
-
         buttons.Add(new LinkButtonProperties(msg.Url, "View on Instagram"));
+
+        if (!msg.Items[msg.CurrentIndex - 1].IsCached)
+        {
+            buttons.Add(new ButtonProperties(
+                RefreshId(msg.Code, msg.CurrentIndex, flag),
+                "Refresh",
+                ButtonStyle.Secondary));
+        }
 
         return new ActionRowProperties(buttons);
     }

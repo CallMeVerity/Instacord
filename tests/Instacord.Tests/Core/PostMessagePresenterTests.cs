@@ -39,6 +39,12 @@ public class PostMessagePresenterTests
     private static TextDisplayProperties HeaderText(PostMessage msg)
         => Container(msg).Components.OfType<TextDisplayProperties>().First(t => t.Content != PostMessagePresenter.Footer);
 
+    private static PostMessage CachedMessage(int items, int current = 1, bool showCaption = false) =>
+        Message(items, current, showCaption) with
+        {
+            Items = Message(items).Items.Select(i => i with { IsCached = true }).ToList(),
+        };
+
     private static TextDisplayProperties FooterText(PostMessage msg)
         => Container(msg).Components.OfType<TextDisplayProperties>().Single(t => t.Content == PostMessagePresenter.Footer);
 
@@ -106,13 +112,13 @@ public class PostMessagePresenterTests
     }
 
     [Fact]
-    public void Build_refresh_button_is_last_interactive_button()
+    public void Build_refresh_button_sits_right_of_instagram_link()
     {
         var row = Container(Message(3, current: 2)).Components.OfType<ActionRowProperties>().Single().ToList();
 
-        Assert.IsType<ButtonProperties>(row[^2]);
-        Assert.Equal("Refresh", ((ButtonProperties)row[^2]).Label);
-        Assert.IsType<LinkButtonProperties>(row[^1]);
+        Assert.IsType<LinkButtonProperties>(row[^2]);
+        Assert.IsType<ButtonProperties>(row[^1]);
+        Assert.Equal("Refresh", ((ButtonProperties)row[^1]).Label);
     }
 
     [Fact]
@@ -149,12 +155,12 @@ public class PostMessagePresenterTests
 
         Assert.Equal(2, buttons.Count);
 
-        var refresh = Assert.IsType<ButtonProperties>(buttons[0]);
+        Assert.IsType<LinkButtonProperties>(buttons[0]);
+
+        var refresh = Assert.IsType<ButtonProperties>(buttons[1]);
         Assert.Equal("igrefresh:ABC:1:0", refresh.CustomId);
         Assert.Equal("Refresh", refresh.Label);
         Assert.False(refresh.Disabled);
-
-        Assert.IsType<LinkButtonProperties>(buttons[1]);
     }
 
     [Fact]
@@ -185,6 +191,24 @@ public class PostMessagePresenterTests
             .Single(b => b.Label == "Refresh");
 
         Assert.Equal("igrefresh:ABC:1:0", refresh.CustomId);
+    }
+
+    [Fact]
+    public void Build_omits_refresh_button_when_current_item_is_cached()
+    {
+        var buttons = Buttons(CachedMessage(3, current: 2));
+
+        Assert.Equal(4, buttons.Count);
+        Assert.DoesNotContain(buttons, b => b is ButtonProperties { Label: "Refresh" });
+    }
+
+    [Fact]
+    public void Build_shows_refresh_when_only_other_items_are_cached()
+    {
+        var items = Message(3).Items.Select((item, i) => item with { IsCached = i != 1 }).ToList();
+        var msg = Message(3, current: 2) with { Items = items };
+
+        Assert.Contains(Buttons(msg), b => b is ButtonProperties { Label: "Refresh" });
     }
 
     [Fact]

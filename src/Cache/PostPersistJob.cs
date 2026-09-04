@@ -53,7 +53,7 @@ public class PostPersistJob
                 buffer.Position = 0;
                 var (ext, contentType) = MimeFor(item.Type);
                 await _store.PutAsync(CacheKeys.MediaKey(code, index, ext), buffer, contentType, ct);
-                storedItems.Add(item with { MediaUrl = CacheKeys.PublicMediaUrl(_options.PublicBaseUrl, code, index, ext) });
+                storedItems.Add(item with { MediaUrl = CacheKeys.PublicMediaUrl(_options.PublicBaseUrl, code, index, ext), IsCached = true });
             }
             catch
             {

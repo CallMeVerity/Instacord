@@ -52,6 +52,7 @@ public class PostPersistJobTests
         var envelope = CachedPostEnvelope.Deserialize(await reader.ReadToEndAsync());
         Assert.NotNull(envelope);
         Assert.Equal(CacheKeys.PublicMediaUrl("https://x/b", "ABC", 1, "jpg"), envelope!.Post.Items[0].MediaUrl);
+        Assert.True(envelope.Post.Items[0].IsCached);
     }
 
     [Fact]
