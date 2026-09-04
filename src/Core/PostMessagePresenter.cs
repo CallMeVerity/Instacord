@@ -7,8 +7,9 @@ namespace Instacord.Core;
 public static class PostMessagePresenter
 {
     private const int MaxComponentText = 4000;
-    private const string Footer = "-# via [Instacord](https://github.com/CallMeVerity/Instacord)";
+    internal const string Footer = "-# via [Instacord](https://github.com/CallMeVerity/Instacord)";
     private const string PaginationPrefix = "igpage";
+    private const string RefreshPrefix = "igrefresh";
 
     public static InteractionMessageProperties Build(PostMessage msg)
     {
@@ -37,11 +38,10 @@ public static class PostMessagePresenter
     private static ActionRowProperties BuildActionRow(PostMessage msg)
     {
         var buttons = new List<IActionRowComponentProperties>();
+        var flag = msg.ShowCaption ? 1 : 0;
 
         if (msg.Items.Count > 1)
         {
-            var flag = msg.ShowCaption ? 1 : 0;
-
             buttons.Add(new ButtonProperties(
                 PaginationId(msg.Code, msg.CurrentIndex - 1, flag),
                 "Prev",
@@ -67,6 +67,11 @@ public static class PostMessagePresenter
             });
         }
 
+        buttons.Add(new ButtonProperties(
+            RefreshId(msg.Code, msg.CurrentIndex, flag),
+            "Refresh",
+            ButtonStyle.Secondary));
+
         buttons.Add(new LinkButtonProperties(msg.Url, "View on Instagram"));
 
         return new ActionRowProperties(buttons);
@@ -74,6 +79,9 @@ public static class PostMessagePresenter
 
     private static string PaginationId(string code, int index, int flag) =>
         $"{PaginationPrefix}:{code}:{index}:{flag}";
+
+    private static string RefreshId(string code, int index, int flag) =>
+        $"{RefreshPrefix}:{code}:{index}:{flag}";
 
     private static MediaGalleryItemProperties GalleryItem(MediaItem item)
     {

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace Instacord.Cache;
 
-public sealed class PostPersistJob
+public class PostPersistJob
 {
     private readonly IObjectStore _store;
     private readonly HttpClient _http;
@@ -20,7 +20,7 @@ public sealed class PostPersistJob
         _options = options.Value;
     }
 
-    public async Task<bool> RunAsync(PersistRequest request, CancellationToken ct)
+    public virtual async Task<bool> RunAsync(PersistRequest request, CancellationToken ct)
     {
         var post = request.FreshPost;
 

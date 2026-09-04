@@ -74,7 +74,7 @@ public class PostMessagePresenterTests
     {
         var buttons = Buttons(Message(3, current: 2));
 
-        Assert.Equal(4, buttons.Count);
+        Assert.Equal(5, buttons.Count);
 
         var prev = buttons.OfType<ButtonProperties>().Single(b => b.Label == "Prev");
         var next = buttons.OfType<ButtonProperties>().Single(b => b.Label == "Next");
@@ -82,6 +82,37 @@ public class PostMessagePresenterTests
         Assert.Equal("igpage:ABC:3:0", next.CustomId);
         Assert.False(prev.Disabled);
         Assert.False(next.Disabled);
+    }
+
+    [Fact]
+    public void Build_adds_refresh_button_for_album()
+    {
+        var refresh = Buttons(Message(3, current: 2))
+            .OfType<ButtonProperties>()
+            .Single(b => b.Label == "Refresh");
+
+        Assert.Equal("igrefresh:ABC:2:0", refresh.CustomId);
+        Assert.False(refresh.Disabled);
+    }
+
+    [Fact]
+    public void Build_refresh_id_preserves_index_and_caption_flag()
+    {
+        var refresh = Buttons(Message(4, current: 3, showCaption: true))
+            .OfType<ButtonProperties>()
+            .Single(b => b.Label == "Refresh");
+
+        Assert.Equal("igrefresh:ABC:3:1", refresh.CustomId);
+    }
+
+    [Fact]
+    public void Build_refresh_button_is_last_interactive_button()
+    {
+        var row = Container(Message(3, current: 2)).Components.OfType<ActionRowProperties>().Single().ToList();
+
+        Assert.IsType<ButtonProperties>(row[^2]);
+        Assert.Equal("Refresh", ((ButtonProperties)row[^2]).Label);
+        Assert.IsType<LinkButtonProperties>(row[^1]);
     }
 
     [Fact]
@@ -116,8 +147,14 @@ public class PostMessagePresenterTests
     {
         var buttons = Buttons(Message(1));
 
-        var button = Assert.Single(buttons);
-        Assert.IsType<LinkButtonProperties>(button);
+        Assert.Equal(2, buttons.Count);
+
+        var refresh = Assert.IsType<ButtonProperties>(buttons[0]);
+        Assert.Equal("igrefresh:ABC:1:0", refresh.CustomId);
+        Assert.Equal("Refresh", refresh.Label);
+        Assert.False(refresh.Disabled);
+
+        Assert.IsType<LinkButtonProperties>(buttons[1]);
     }
 
     [Fact]
@@ -138,6 +175,16 @@ public class PostMessagePresenterTests
 
         foreach (var b in buttons.OfType<ButtonProperties>())
             Assert.False(string.IsNullOrEmpty(b.CustomId));
+    }
+
+    [Fact]
+    public void Build_refresh_button_shown_for_single_item()
+    {
+        var refresh = Buttons(Message(1))
+            .OfType<ButtonProperties>()
+            .Single(b => b.Label == "Refresh");
+
+        Assert.Equal("igrefresh:ABC:1:0", refresh.CustomId);
     }
 
     [Fact]

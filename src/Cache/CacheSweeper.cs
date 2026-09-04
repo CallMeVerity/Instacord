@@ -27,7 +27,7 @@ public sealed class CacheSweeper : IHostedService, IDisposable
         return Task.CompletedTask;
     }
 
-    private async Task<int> SweepAsync(CancellationToken ct)
+    internal async Task<int> SweepAsync(CancellationToken ct)
     {
         var keys = await _store.ListAsync(CacheKeys.Prefix, ct);
         var codes = keys

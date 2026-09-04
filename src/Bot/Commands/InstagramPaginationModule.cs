@@ -9,7 +9,14 @@ namespace Instacord.Bot.Commands;
 public class InstagramPaginationModule(IInstagramService api) : ComponentInteractionModule<ComponentInteractionContext>
 {
     [ComponentInteraction("igpage")]
-    public async Task Page(string code, int index, int withCaption)
+    public Task Page(string code, int index, int withCaption) => RedrawAsync(code, index, withCaption);
+
+    [ComponentInteraction("igrefresh")]
+    public Task Refresh(string code, int index, int withCaption) => RedrawAsync(code, index, withCaption);
+
+    // Instagram CDN links expire, so this always goes through the cache-first service: if the
+    // post has been persisted, the embed gets rebuilt with cached object-store media URLs.
+    private async Task RedrawAsync(string code, int index, int withCaption)
     {
         var post = await api.GetPostAsync(code);
         if (post is null)
